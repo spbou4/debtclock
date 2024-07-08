@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mortgage Payment Calculator</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            background-color: #f4f4f4;
+        }
+        .calculator {
+            margin: 50px auto;
+            background: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            width: 80%;
+            max-width: 600px;
+        }
+        input {
+            margin: 10px 0;
+            padding: 10px;
+            width: calc(100% - 24px);
+        }
+        button {
+            padding: 10px 20px;
+            margin: 20px 0;
+            background-color: #28a745;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #218838;
+        }
+        .result {
+            font-size: 1.5em;
+            color: #333;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="calculator">
+        <h1>Mortgage Payment Calculator</h1>
+        <input type="number" id="principal" placeholder="Mortgage Balance ($)" required>
+        <input type="number" step="0.01" id="annualRate" placeholder="Annual Interest Rate (%)" required>
+        <input type="number" id="years" placeholder="Time Remaining (years)" required>
+        <button onclick="calculateMortgage()">Calculate Monthly Payment</button>
+        <div class="result" id="result"></div>
+    </div>
+
+    <script>
+        function calculateMortgage() {
+            const principal = parseFloat(document.getElementById('principal').value);
+            const annualRate = parseFloat(document.getElementById('annualRate').value) / 100;
+            const years = parseFloat(document.getElementById('years').value);
+            const months = years * 12;
+
+            if (isNaN(principal) || isNaN(annualRate) || isNaN(years)) {
+                document.getElementById('result').textContent = "Please enter valid numbers.";
+                return;
+            }
+
+            // Calculate the semi-annual compounded rate
+            const semiAnnualRate = (1 + annualRate / 2) ** 2 - 1;
+            const monthlyRate = (1 + semiAnnualRate) ** (1 / 12) - 1;
+
+            // Calculate the monthly payment
+            const monthlyPayment = principal * (monthlyRate * (1 + monthlyRate) ** months) / ((1 + monthlyRate) ** months - 1);
+
+            // Display the result
+            document.getElementById('result').textContent = `Monthly Payment: ${monthlyPayment.toLocaleString('en-US', { style: 'currency', currency: 'USD' })}`;
+        }
+    </script>
+</body>
+</html>
