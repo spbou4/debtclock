@@ -3,14 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mortgage Payment Calculator</title>
+    <title>Canada Debt Clock</title>
     <style>
         body {
             font-family: Arial, sans-serif;
             text-align: center;
             background-color: #f4f4f4;
         }
-        .calculator {
+        .debt-clock {
             margin: 50px auto;
             background: #fff;
             padding: 20px;
@@ -19,62 +19,63 @@
             width: 80%;
             max-width: 600px;
         }
-        input {
-            margin: 10px 0;
-            padding: 10px;
-            width: calc(100% - 24px);
-        }
-        button {
-            padding: 10px 20px;
-            margin: 20px 0;
-            background-color: #28a745;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-        }
-        button:hover {
-            background-color: #218838;
-        }
-        .result {
-            font-size: 1.5em;
-            color: #333;
+        .debt-amount {
+            font-size: 2em;
+            color: red;
             margin: 20px 0;
         }
     </style>
 </head>
 <body>
-    <div class="calculator">
-        <h1>Mortgage Payment Calculator</h1>
-        <input type="number" id="principal" placeholder="Mortgage Balance ($)" required>
-        <input type="number" step="0.01" id="annualRate" placeholder="Annual Interest Rate (%)" required>
-        <input type="number" id="years" placeholder="Time Remaining (years)" required>
-        <button onclick="calculateMortgage()">Calculate Monthly Payment</button>
-        <div class="result" id="result"></div>
+    <div class="debt-clock">
+        <h1>Canada's Federal Debt</h1>
+        <div class="debt-amount" id="debt-amount">$1,231,695,646,637.46</div>
+        <p id="share">Your Share: $31,129.00</p>
     </div>
 
     <script>
-        function calculateMortgage() {
-            const principal = parseFloat(document.getElementById('principal').value);
-            const annualRate = parseFloat(document.getElementById('annualRate').value) / 100;
-            const years = parseFloat(document.getElementById('years').value);
-            const months = years * 12;
+        const population = 39000000; // Population of Canada
+        const minGrowthPerHour = 4577625.57; // Growth of debt per hour in dollars
+        const millisecondsPerHour = 3600000; // Milliseconds per hour
+        const initialDebt = 1231695646637.46; // Initial debt amount in dollars
+        const initialDebtTimestamp = new Date('2024-07-08T00:00:00').getTime(); // Timestamp for the initial debt
 
-            if (isNaN(principal) || isNaN(annualRate) || isNaN(years)) {
-                document.getElementById('result').textContent = "Please enter valid numbers.";
-                return;
-            }
-
-            // Calculate the semi-annual compounded rate
-            const semiAnnualRate = (1 + annualRate / 2) ** 2 - 1;
-            const monthlyRate = (1 + semiAnnualRate) ** (1 / 12) - 1;
-
-            // Calculate the monthly payment
-            const monthlyPayment = principal * (monthlyRate * (1 + monthlyRate) ** months) / ((1 + monthlyRate) ** months - 1);
-
-            // Display the result
-            document.getElementById('result').textContent = `Monthly Payment: ${monthlyPayment.toLocaleString('en-US', { style: 'currency', currency: 'USD' })}`;
+        function formatNumber(num) {
+            return num.toLocaleString('en-US', { style: 'currency', currency: 'USD' });
         }
+
+        function getCurrentDebt() {
+            const currentTimestamp = Date.now();
+            const timeElapsed = currentTimestamp - initialDebtTimestamp;
+            const hoursElapsed = timeElapsed / millisecondsPerHour;
+            const growth = hoursElapsed * minGrowthPerHour;
+            return initialDebt + growth;
+        }
+
+        function updateDebt() {
+            let debt = parseFloat(localStorage.getItem('currentDebt')) || getCurrentDebt();
+
+            // Increase the debt by a random amount between 90% and 110% of minGrowthPerHour per hour
+            const randomFactor = Math.random() * 0.2 + 0.9; // Random factor between 0.9 and 1.1
+            const increment = minGrowthPerHour / (millisecondsPerHour / 1000) * randomFactor;
+            debt += increment;
+
+            // Calculate the share per person
+            const share = debt / population;
+
+            // Update the displayed debt amount
+            document.getElementById('debt-amount').textContent = formatNumber(debt);
+            document.getElementById('share').textContent = `Your Share: ${formatNumber(share)}`;
+
+            // Save the current debt in localStorage
+            localStorage.setItem('currentDebt', debt);
+
+            // Schedule the next update
+            setTimeout(updateDebt, 1000); // Update every second
+        }
+
+        // Start the debt clock updates
+        updateDebt();
     </script>
 </body>
 </html>
